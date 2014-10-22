@@ -1,3 +1,4 @@
+#!/bin/sh
 
 # +3.3 is wired to the middle lead of switch.
 # GPIO pin is wired to the end lead of switch
