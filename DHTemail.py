@@ -14,6 +14,7 @@ import Adafruit_DHT
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from ISStreamer.Streamer import Streamer
 
 
 
@@ -22,7 +23,7 @@ GPIO.setmode(GPIO.BCM) ## Use chip numbering
 
 def sendit():
     mail = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
-    mail.set_debuglevel(1)
+    mail.set_debuglevel(0)                # 0 is off.   1 has detail.
     mail.ehlo()
     mail.starttls()
     mail.ehlo()
@@ -36,6 +37,9 @@ def sendit():
 sensor = Adafruit_DHT.DHT22      # use either DHT11 or DHT22
 pin = 24   #GPIO24
 
+streamer = Streamer(bucket_name="House Example", access_key="nO6joCK4pkzDDj7whCAJGJEHmhevYF73")
+streamer.log("notes", "stream starting")
+
 
 print datetime.datetime.now()
 print '\n'
@@ -46,7 +50,7 @@ print '\n'
         
 n=0
 
-while n < 10:
+while n < 200:
     n=n+1
     print n
 
@@ -59,25 +63,29 @@ while n < 10:
         inttemp = "{0:0.2f}".format(temperature)
         inthumidity = "{0:0.2f}".format(humidity)
 
-        message = MIMEMultipart('alternative')
-        message['Subject'] = "temp and humidity"
-        text = 'temperature =  ' + inttemp + '    humidity =  ' + inthumidity
-        part1 = MIMEText(text, 'plain')
-        message.attach(part1)
-        
+        streamer.log("temperature", inttemp)
+        streamer.log("humidity", inthumidity)
 
-        sendit()
+        #message = MIMEMultipart('alternative')
+        #message['Subject'] = "temp and humidity"
+        #text = 'temperature =  ' + inttemp + '    humidity =  ' + inthumidity
+        #part1 = MIMEText(text, 'plain')
+        #message.attach(part1)
+        
+        #sendit()
+
+        time.sleep(10)
 
 
 
     else:
         print 'Failed to get reading.  Try again.'
+        streamer.log("notes", "missed sample")
     
-    time.sleep(10)
 
+streamer.log("notes", "stream done")
 
-
-# GPIO.cleanup()
+GPIO.cleanup()
 
 
 
