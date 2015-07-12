@@ -6,8 +6,10 @@
 # 10K Ohm resistor between pin 1 and pin 2
 
 
+#/bin/sh
 
-import RPi.GPIO as GPIO     ## Import GPIO library
+import RPi.GPIO as GPIO
+import os
 import time
 import datetime
 import Adafruit_DHT
@@ -18,9 +20,22 @@ from ISStreamer.Streamer import Streamer
 
 
 
-GPIO.setmode(GPIO.BCM) ## Use chip numbering
+GPIO.setmode(GPIO.BCM) ## Use GPIO pin numbering
 
 
+# define shutdown button.  one side to GPIO, the other to GROUND
+GPIO.setup(4, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+
+
+# define shutdown routine
+def Shutdown(channel):
+    GPIO.cleanup()
+    os.system("sudo shutdown -h now")
+
+GPIO.add_event_detect(4, GPIO.FALLING, callback = Shutdown, bouncetime = 2000)
+
+
+#define opening email connection
 def sendit():
     mail = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
     mail.set_debuglevel(0)                # 0 is off.   1 has detail.
@@ -41,18 +56,19 @@ streamer = Streamer(bucket_name="House Example", access_key="nO6joCK4pkzDDj7whCA
 streamer.log("notes", "stream starting")
 
 
+
+
+
 print datetime.datetime.now()
 print '\n'
-print time.time()
-print '\n'
 
- #loop to kill time.
+
+#loop to kill time.
         
-n=0
+# n=0   setting up an infinite loop.  only way to kill it is with GPIO shutdown buttone
 
-while n < 200:
-    n=n+1
-    print n
+while True:
+
 
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
     temperature = ((temperature *9.0) / 5.0) +32.0  #convert Celcius to Farenheit
@@ -74,7 +90,7 @@ while n < 200:
         
         #sendit()
 
-        time.sleep(10)
+        time.sleep(300)   #300 is every 5 minutes
 
 
 
@@ -82,6 +98,7 @@ while n < 200:
         print 'Failed to get reading.  Try again.'
         streamer.log("notes", "missed sample")
     
+
 
 streamer.log("notes", "stream done")
 
