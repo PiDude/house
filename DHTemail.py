@@ -29,6 +29,7 @@ GPIO.setup(4, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
 # define shutdown routine
 def Shutdown(channel):
+    streamer.log("notes", "stream killed")
     GPIO.cleanup()
     os.system("sudo shutdown -h now")
 
@@ -65,10 +66,11 @@ print '\n'
 
 #loop to kill time.
         
-# n=0   setting up an infinite loop.  only way to kill it is with GPIO shutdown buttone
+n=0
 
-while True:
+while n < 2020:
 
+    n = n+1
 
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
     temperature = ((temperature *9.0) / 5.0) +32.0  #convert Celcius to Farenheit
@@ -79,6 +81,7 @@ while True:
         inttemp = "{0:0.2f}".format(temperature)
         inthumidity = "{0:0.2f}".format(humidity)
 
+        streamer.log("counter", n)
         streamer.log("temperature", inttemp)
         streamer.log("humidity", inthumidity)
 
