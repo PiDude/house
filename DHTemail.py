@@ -1,4 +1,6 @@
-
+# run with:
+#     @reboot python /home/pi/programs/.../filename.py > output.file 2>&1 &
+#
 # pin 1 to +3.3V
 # pin 2 to GPIO pin
 # pin 3 no connection
